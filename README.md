@@ -1,5 +1,5 @@
 
-## Music_Store_Data_Analysis_Project
+## Music_Store_Data_Analysis_Project(using sql)
 
 ---
 
