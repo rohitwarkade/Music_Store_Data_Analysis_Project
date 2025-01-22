@@ -9,7 +9,7 @@ To create an interactive Excel dashboard that provides insights into the sales, 
 ---
 
 Dataset used:-
-- <a href= 
+- <a href= https://github.com/rohitwarkade/Music_Store_Data_Analysis_Project/tree/main/music%20store%20data > dataset </a>
 ### **Steps to Create the Dashboard**
 
 #### **1. Collect and Prepare the Data**
