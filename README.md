@@ -1,99 +1,167 @@
-## Music_Store_Data_Analysis_Project ( (Interactive Dashboard creation using MS Excel)
-Creating an **interactive dashboard** for a **Music Store Data Analysis Project** in **MS Excel** can be a powerful way to analyze and visualize data. Here's an outline of how you can approach this project:  
+
+## Music_Store_Data_Analysis_Project
 
 ---
 
-### **Objective**  
-To create an interactive Excel dashboard that provides insights into the sales, customer behavior, inventory, and trends of a music store, enabling data-driven decision-making.
+## **Step 1: Define Project Objectives**
+- Analyze sales trends (e.g., popular genres, artists, or albums).
+- Understand customer demographics and purchase behavior.
+- Evaluate store performance over time (e.g., revenue by month or year).
+- Identify opportunities for targeted marketing (e.g., popular genres by location).
 
 ---
 
-Dataset used:-
-- <a href= https://github.com/rohitwarkade/Music_Store_Data_Analysis_Project/tree/main/music%20store%20data > dataset </a>
-### **Steps to Create the Dashboard**
+## **Step 2: Database Design**
+### **Entities**
+1. **Customers**: Information about the buyers.
+2. **Albums**: Metadata about the music albums.
+3. **Artists**: Information about artists.
+4. **Genres**: Musical genres associated with tracks.
+5. **Tracks**: Information about individual tracks.
+6. **Invoices**: Sales details for purchases.
+7. **Invoice_Items**: Specific tracks purchased on an invoice.
 
-#### **1. Collect and Prepare the Data**
-- Gather data on the following:
-  - **Sales Data**: Item name, sales date, quantity sold, price, revenue.
-  - **Customer Data**: Customer ID, demographics, region.
-  - **Inventory Data**: Item ID, item category (e.g., CDs, instruments), stock levels.
-  - **Other Data**: Discounts, promotions, store locations, etc.
-- Clean the data:
-  - Remove duplicates.
-  - Handle missing values.
-  - Ensure proper formatting (dates, numeric data, etc.).
+### **Schema Design**
+```sql
+-- Customers Table
+CREATE TABLE Customers (
+    CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    Country VARCHAR(50),
+    City VARCHAR(50)
+);
 
----
+-- Artists Table
+CREATE TABLE Artists (
+    ArtistID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100)
+);
 
-#### **2. Define Key Metrics and KPIs**
-- **Sales Metrics**: Total sales, revenue, and profit.
-- **Customer Metrics**: Number of unique customers, top customers by revenue.
-- **Inventory Metrics**: Items with low stock, top-selling products.
-- **Trend Analysis**: Monthly/weekly/yearly sales trends.
-- **Geographical Analysis**: Sales by region.
+-- Albums Table
+CREATE TABLE Albums (
+    AlbumID INT AUTO_INCREMENT PRIMARY KEY,
+    Title VARCHAR(100),
+    ArtistID INT,
+    FOREIGN KEY (ArtistID) REFERENCES Artists(ArtistID)
+);
 
----
+-- Genres Table
+CREATE TABLE Genres (
+    GenreID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(50)
+);
 
-#### **3. Organize the Data in Excel**
-- Use structured tables:
-  - Convert raw data into Excel tables (Insert → Table) for dynamic ranges.
-- Create supporting columns for:
-  - **Calculated fields**: Revenue (Quantity × Price), Profit Margin, etc.
-  - **Categories**: Date grouping (e.g., months, quarters, years).
+-- Tracks Table
+CREATE TABLE Tracks (
+    TrackID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100),
+    AlbumID INT,
+    GenreID INT,
+    UnitPrice DECIMAL(5, 2),
+    FOREIGN KEY (AlbumID) REFERENCES Albums(AlbumID),
+    FOREIGN KEY (GenreID) REFERENCES Genres(GenreID)
+);
 
----
+-- Invoices Table
+CREATE TABLE Invoices (
+    InvoiceID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT,
+    InvoiceDate DATE,
+    Total DECIMAL(10, 2),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
 
-#### **4. Build Pivot Tables and Pivot Charts**
-- Use **Pivot Tables** to summarize the data:
-  - Revenue by category or region.
-  - Monthly sales trends.
-  - Top-selling items.
-- Create **Pivot Charts** for visual representation:
-  - Line charts for trends.
-  - Bar/Column charts for category sales.
-  - Pie charts for customer segmentation.
-
----
-
-#### **5. Add Interactivity with Slicers and Timelines**
-- Insert **Slicers**:
-  - Filter data dynamically (e.g., by product category, region, or customer segment).
-- Add **Timelines**:
-  - Filter by date ranges (monthly, quarterly, yearly).
-
----
-
-#### **6. Design the Dashboard**
-- Create a dedicated sheet for the dashboard.
-- Include:
-  - Key performance indicators (KPIs) at the top.
-  - Visuals like charts, tables, and trend lines.
-  - Slicers for interactivity.
-- Use formatting for better readability:
-  - Consistent colors.
-  - Conditional formatting for highlighting trends or issues.
-  - Labels and titles for clarity.
-
----
-
-#### **7. Test and Refine**
-- Ensure slicers and charts update automatically.
-- Validate calculations and data connections.
-- Refine layout and visual design.
-
----
-
-### **Tools and Features to Use in MS Excel**
-- **Data Cleaning**: Power Query for transformation and merging.
-- **Data Analysis**: Pivot Tables, Power Pivot for large datasets.
-- **Visualizations**: Charts, conditional formatting, sparklines.
-- **Interactivity**: Slicers, timelines, drop-down menus (Data Validation).
-- **Macros (Optional)**: Automate repetitive tasks if needed.
+-- Invoice_Items Table
+CREATE TABLE Invoice_Items (
+    InvoiceItemID INT AUTO_INCREMENT PRIMARY KEY,
+    InvoiceID INT,
+    TrackID INT,
+    UnitPrice DECIMAL(5, 2),
+    Quantity INT,
+    FOREIGN KEY (InvoiceID) REFERENCES Invoices(InvoiceID),
+    FOREIGN KEY (TrackID) REFERENCES Tracks(TrackID)
+);
+```
 
 ---
 
-### **Deliverables**
-- **Interactive Dashboard**: A polished Excel file with an interactive dashboard.
-- **Documentation**: Notes explaining key features and data sources.
-- **Insights**: A summary of findings from the analysis.
+## **Step 3: Import Data**
+- Use CSV files or existing datasets to populate tables.
+- MySQL commands for importing data:
+  ```sql
+  LOAD DATA INFILE 'path/to/customers.csv'
+  INTO TABLE Customers
+  FIELDS TERMINATED BY ',' 
+  LINES TERMINATED BY '\n'
+  IGNORE 1 ROWS;
+  ```
 
+---
+
+## **Step 4: Perform Analysis**
+### **Sample Queries**
+1. **Top Selling Genres**
+   ```sql
+   SELECT g.Name AS Genre, SUM(ii.Quantity) AS Total_Sales
+   FROM Invoice_Items ii
+   JOIN Tracks t ON ii.TrackID = t.TrackID
+   JOIN Genres g ON t.GenreID = g.GenreID
+   GROUP BY g.Name
+   ORDER BY Total_Sales DESC;
+   ```
+
+2. **Top Artists by Revenue**
+   ```sql
+   SELECT ar.Name AS Artist, SUM(ii.UnitPrice * ii.Quantity) AS Revenue
+   FROM Invoice_Items ii
+   JOIN Tracks t ON ii.TrackID = t.TrackID
+   JOIN Albums al ON t.AlbumID = al.AlbumID
+   JOIN Artists ar ON al.ArtistID = ar.ArtistID
+   GROUP BY ar.Name
+   ORDER BY Revenue DESC;
+   ```
+
+3. **Monthly Revenue Trend**
+   ```sql
+   SELECT DATE_FORMAT(InvoiceDate, '%Y-%m') AS Month, SUM(Total) AS Monthly_Revenue
+   FROM Invoices
+   GROUP BY Month
+   ORDER BY Month;
+   ```
+
+4. **Customer Purchase Frequency**
+   ```sql
+   SELECT c.FirstName, c.LastName, COUNT(i.InvoiceID) AS Purchase_Count
+   FROM Customers c
+   JOIN Invoices i ON c.CustomerID = i.CustomerID
+   GROUP BY c.CustomerID
+   ORDER BY Purchase_Count DESC;
+   ```
+
+5. **Revenue by Country**
+   ```sql
+   SELECT c.Country, SUM(i.Total) AS Revenue
+   FROM Invoices i
+   JOIN Customers c ON i.CustomerID = c.CustomerID
+   GROUP BY c.Country
+   ORDER BY Revenue DESC;
+   ```
+
+---
+
+## **Step 5: Insights and Visualizations**
+- Use tools like Tableau, Power BI, or Python libraries (e.g., Matplotlib, Seaborn) to visualize data.
+- Example visualizations:
+  - Bar charts for top genres or artists.
+  - Line charts for monthly revenue trends.
+  - Heatmaps for revenue by country.
+
+---
+
+## **Step 6: Documentation**
+- Write a report detailing the objectives, methods, results, and recommendations based on analysis.
+- Include SQL queries and visualizations.
+
+Would you like help setting up specific queries, further steps, or generating a detailed report for this analysis?
